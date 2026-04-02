@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,7 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(exclude = {"hotel", "amenities", "photos"})
+@ToString(exclude = {"hotel", "amenities", "photos", "tariffs"})
 public class RoomType {
 
     @Id
@@ -42,4 +43,7 @@ public class RoomType {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private List<String> photos;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Tariff> tariffs = new ArrayList<>();
 }

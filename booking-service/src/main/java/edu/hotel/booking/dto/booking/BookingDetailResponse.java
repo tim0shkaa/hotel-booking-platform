@@ -16,7 +16,7 @@ public class BookingDetailResponse {
 
     private Long id;
 
-    private RoomSummaryResponse roomResponse;
+    private RoomSummaryResponse room;
 
     private LocalDate checkIn;
 
@@ -33,6 +33,4 @@ public class BookingDetailResponse {
     private String notes;
 
     private List<BookingStatusHistoryResponse> statusHistory;
-
-
 }

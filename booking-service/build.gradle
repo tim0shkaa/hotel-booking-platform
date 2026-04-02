@@ -1,5 +1,6 @@
 plugins {
     id 'org.springframework.boot'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 dependencies {
@@ -23,4 +24,11 @@ dependencies {
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
     testImplementation 'org.mockito:mockito-core'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+repositories {
+    mavenCentral()
+}
+kotlin {
+    jvmToolchain(21)
 }

@@ -1,6 +1,6 @@
 # Hotel Booking Platform — Техническое задание
 
-> Микросервисная архитектура · Kotlin · Spring Boot 3
+> Микросервисная архитектура · Java · Spring Boot 3
 
 ---
 
