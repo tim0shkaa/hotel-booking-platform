@@ -11,7 +11,7 @@ import java.util.List;
 public interface RoomTypeService {
 
     // GET /hotels/{id}/availability
-    List<RoomTypeResponse> findAvailableRoomType(
+    List<RoomTypeResponse> findAvailableRoomTypes(
             Long hotelId, LocalDate checkIn, LocalDate checkOut);
 
     // POST /hotels/{id}/room-types

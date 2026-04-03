@@ -12,9 +12,9 @@ public interface BookingMapper {
 
     Booking toEntity(BookingCreateRequest request);
 
-    @Mapping(source = "roomType.id", target = "roomTypeId")
-    @Mapping(source = "roomType.name", target = "roomTypeName")
-    @Mapping(source = "roomType.hotel.name", target = "hotelName")
+    @Mapping(source = "room.roomType.id", target = "roomTypeId")
+    @Mapping(source = "room.roomType.name", target = "roomTypeName")
+    @Mapping(source = "room.roomType.hotel.name", target = "hotelName")
     BookingSummaryResponse toSummaryResponse(Booking booking);
 
     BookingDetailResponse toDetailResponse(Booking booking);

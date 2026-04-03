@@ -37,7 +37,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoomTypeResponse> findAvailableRoomType(
+    public List<RoomTypeResponse> findAvailableRoomTypes(
             Long hotelId, LocalDate checkIn, LocalDate checkOut) {
 
         List<RoomType> roomTypes = roomTypeRepository.findWithTariffsByHotelId(hotelId);

@@ -44,6 +44,6 @@ public class RoomType {
     @Column(columnDefinition = "jsonb")
     private List<String> photos;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
     private List<Tariff> tariffs = new ArrayList<>();
 }
