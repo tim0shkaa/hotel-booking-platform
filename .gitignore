@@ -48,3 +48,5 @@ docker-compose.override.yml
 amplicode.xml
 
 features.md
+
+**/keys/private.pem
