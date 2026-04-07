@@ -1,4 +1,4 @@
-package edu.hotel.auth.exception;
+package edu.hotel.common.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

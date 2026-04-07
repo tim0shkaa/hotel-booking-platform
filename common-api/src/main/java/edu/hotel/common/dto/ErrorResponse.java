@@ -1,4 +1,4 @@
-package edu.hotel.booking.exception;
+package edu.hotel.common.dto;
 
 import lombok.Builder;
 import lombok.Data;

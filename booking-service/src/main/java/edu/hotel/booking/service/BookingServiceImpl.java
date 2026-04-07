@@ -15,7 +15,7 @@ import edu.hotel.booking.repository.BookingRepository;
 import edu.hotel.booking.repository.GuestRepository;
 import edu.hotel.booking.repository.RoomRepository;
 import edu.hotel.booking.repository.TariffRepository;
-import jakarta.persistence.EntityNotFoundException;
+import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,10 +46,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingMapper.toEntity(request);
 
         Guest guest = guestRepository.findById(guestId)
-                .orElseThrow(() -> new EntityNotFoundException("Гость с id: " + guestId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Гость с id: " + guestId + " не найден"));
 
         Tariff tariff = tariffRepository.findByIdAndRoomTypeId(request.getTariffId(), request.getRoomTypeId())
-                .orElseThrow(() -> new EntityNotFoundException("Тариф с id: " + request.getTariffId() + " не найден или не принадлежит данному типу номера"));
+                .orElseThrow(() -> new NotFoundException("Тариф с id: " + request.getTariffId() + " не найден или не принадлежит данному типу номера"));
 
         Room room = roomRepository.findFirstAvailableRoom(request.getRoomTypeId(), request.getCheckIn(), request.getCheckOut())
                 .orElseThrow(() -> new NotAvailableRoomsException(
@@ -79,7 +79,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     public BookingDetailResponse getById(Long id) {
         Booking booking = bookingRepository.findDetailById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Бронирование с id: " + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
         return bookingMapper.toDetailResponse(booking);
     }
@@ -105,7 +105,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDetailResponse cancelBooking(Long id) {
         Booking booking = bookingRepository.findDetailById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Бронирование с id: " + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
         if (booking.getStatus() != BookingStatus.PENDING_PAYMENT &&
                 booking.getStatus() != BookingStatus.CONFIRMED) {
@@ -123,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDetailResponse checkInById(Long id) {
         Booking booking = bookingRepository.findDetailById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Бронирование с id: " + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new IllegalStateException(
@@ -140,7 +140,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDetailResponse checkOutById(Long id) {
         Booking booking = bookingRepository.findDetailById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Бронирование с id: " + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
         if (booking.getStatus() != BookingStatus.CHECKED_IN) {
             throw new IllegalStateException(

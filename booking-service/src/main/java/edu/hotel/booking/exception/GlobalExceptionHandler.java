@@ -15,28 +15,28 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFound(
+    public ResponseEntity<edu.hotel.common.dto.ErrorResponse> handleEntityNotFound(
             EntityNotFoundException ex, HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(NotAvailableRoomsException.class)
-    public ResponseEntity<ErrorResponse> handleNotAvailableRooms(
+    public ResponseEntity<edu.hotel.common.dto.ErrorResponse> handleNotAvailableRooms(
             NotAvailableRoomsException ex, HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalState(
+    public ResponseEntity<edu.hotel.common.dto.ErrorResponse> handleIllegalState(
             IllegalStateException ex, HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(
+    public ResponseEntity<edu.hotel.common.dto.ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request
     ) {
         String message = ex.getBindingResult().getFieldErrors().stream()
@@ -46,17 +46,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneral(
+    public ResponseEntity<edu.hotel.common.dto.ErrorResponse> handleGeneral(
             Exception ex, HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Внутренняя ошибка сервера", request);
     }
 
-    private ResponseEntity<ErrorResponse> buildResponse(
+    private ResponseEntity<edu.hotel.common.dto.ErrorResponse> buildResponse(
             HttpStatus status, String message, HttpServletRequest request
     ) {
-        ErrorResponse errorResponse = ErrorResponse.builder()
+        edu.hotel.common.dto.ErrorResponse errorResponse = edu.hotel.common.dto.ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
                 .error(status.getReasonPhrase())

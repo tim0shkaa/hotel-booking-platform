@@ -8,7 +8,7 @@ import edu.hotel.auth.entity.AuditLog;
 import edu.hotel.auth.entity.RefreshToken;
 import edu.hotel.auth.entity.User;
 import edu.hotel.auth.exception.AuthException;
-import edu.hotel.auth.exception.NotFoundException;
+import edu.hotel.common.exception.NotFoundException;
 import edu.hotel.auth.mapper.AuditLogMapper;
 import edu.hotel.auth.mapper.UserMapper;
 import edu.hotel.auth.model.Action;
