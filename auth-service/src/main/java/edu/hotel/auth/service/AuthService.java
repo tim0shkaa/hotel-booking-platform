@@ -13,17 +13,17 @@ import java.time.LocalDateTime;
 
 public interface AuthService {
 
-    RegisterResponse register(RegisterRequest request, String ipAddress, String userAgent) throws NoSuchAlgorithmException;
+    RegisterResponse register(RegisterRequest request, String ipAddress, String userAgent);
 
-    AuthResponse login(LoginRequest request, String ipAddress, String userAgent) throws NoSuchAlgorithmException;
+    AuthResponse login(LoginRequest request, String ipAddress, String userAgent);
 
-    AuthResponse refresh(RefreshRequest request, String ipAddress, String userAgent) throws NoSuchAlgorithmException;
+    AuthResponse refresh(RefreshRequest request, String ipAddress, String userAgent);
 
-    void logout(String refreshToken, String ipAddress, String userAgent) throws NoSuchAlgorithmException;
+    void logout(String refreshToken, String ipAddress, String userAgent);
 
     UserResponse getCurrentUserData(Long userId);
 
-    UserResponse changePassword(Long userId, ChangePasswordRequest request, String ipAddress, String userAgent) throws NoSuchAlgorithmException;
+    UserResponse changePassword(Long userId, ChangePasswordRequest request, String ipAddress, String userAgent);
 
     Page<UserResponse> getUsers(String role, Boolean active, Pageable pageable);
 

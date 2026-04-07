@@ -81,6 +81,14 @@ public class JwtService {
         }
     }
 
-
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        return (List<String>) Jwts.parser()
+                .verifyWith(publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("roles", List.class);
+    }
 
 }
