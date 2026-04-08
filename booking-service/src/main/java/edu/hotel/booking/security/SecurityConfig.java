@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -47,12 +49,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-in").hasAnyRole("ADMIN", "HOTEL_MANAGER")
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-out").hasAnyRole("ADMIN", "HOTEL_MANAGER")
 
-                        .requestMatchers(HttpMethod.GET, "/guests/**").hasAnyRole("GUEST", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/guests/*/bookings").hasAnyRole("GUEST", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/guests").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/guests/me").authenticated()
 
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthentificationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            throw new UsernameNotFoundException("UserDetailsService not used");
+        };
     }
 }

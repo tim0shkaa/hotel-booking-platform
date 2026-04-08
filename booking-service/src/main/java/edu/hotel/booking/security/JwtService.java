@@ -2,30 +2,28 @@ package edu.hotel.booking.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final RSAPublicKey publicKey;
 
     private Claims extractClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
 
     public Long extractUserId(String token) {
-        return extractClaims(token).get("userId", Long.class);
+        return Long.parseLong(extractClaims(token).getSubject());
     }
 
     @SuppressWarnings("unchecked")
@@ -40,10 +38,5 @@ public class JwtService {
         } catch (Exception exception) {
             return false;
         }
-    }
-
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
