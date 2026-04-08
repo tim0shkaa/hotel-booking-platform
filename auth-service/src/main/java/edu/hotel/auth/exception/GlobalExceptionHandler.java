@@ -15,6 +15,13 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(edu.hotel.common.exception.AlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyExists(
+            edu.hotel.common.exception.AlreadyExistsException ex, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
             NotFoundException ex, HttpServletRequest request

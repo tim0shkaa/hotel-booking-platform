@@ -1,8 +1,8 @@
 package edu.hotel.booking.exception;
 
 import edu.hotel.common.dto.ErrorResponse;
+import edu.hotel.common.exception.AlreadyExistsException;
 import edu.hotel.common.exception.NotFoundException;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +21,13 @@ public class GlobalExceptionHandler {
             NotFoundException ex, HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyExists(
+            AlreadyExistsException ex, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(NotAvailableRoomsException.class)
