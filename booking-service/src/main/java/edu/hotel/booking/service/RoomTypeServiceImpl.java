@@ -13,7 +13,7 @@ import edu.hotel.booking.repository.HotelRepository;
 import edu.hotel.booking.repository.RoomRepository;
 import edu.hotel.booking.repository.RoomTypeRepository;
 import edu.hotel.booking.repository.TariffRepository;
-import jakarta.persistence.EntityNotFoundException;
+import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +55,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional
     public RoomTypeResponse createRoomType(Long id, RoomTypeRequest request) {
         Hotel hotel = hotelRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Отель с id " + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Отель с id " + id + " не найден"));
 
         RoomType roomType = roomTypeMapper.toEntity(request);
         roomType.setHotel(hotel);
@@ -67,7 +67,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional
     public TariffResponse createTariff(Long id, TariffRequest request) {
         RoomType roomType = roomTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Тип номера с id " + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Тип номера с id " + id + " не найден"));
 
         Tariff tariff = tariffMapper.toEntity(request);
         tariff.setRoomType(roomType);
@@ -79,7 +79,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Transactional(readOnly = true)
     public List<TariffResponse> getActualTariffs(Long roomTypeId) {
         roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
         List<Tariff> actualTariffs = tariffRepository
                 .findActualByRoomTypeId(roomTypeId, LocalDate.now());
         return actualTariffs.stream()

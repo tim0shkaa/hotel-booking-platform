@@ -9,7 +9,7 @@ import edu.hotel.booking.mapper.HotelMapper;
 import edu.hotel.booking.mapper.RoomTypeMapper;
 import edu.hotel.booking.repository.HotelRepository;
 import edu.hotel.booking.repository.RoomTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
+import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +47,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional(readOnly = true)
     public HotelDetailResponse getHotelById(Long id) {
         Hotel hotel = hotelRepository.findWithRoomsTypesById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Отель с id: " + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Отель с id: " + id + " не найден"));
 
         List<RoomType> roomTypes = roomTypeRepository.findWithTariffsByHotelId(id);
 
@@ -73,7 +73,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional
     public HotelDetailResponse update(Long id, HotelRequest request) {
         Hotel hotel = hotelRepository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("Отель с id: " + id + " не найден"));
+                orElseThrow(() -> new NotFoundException("Отель с id: " + id + " не найден"));
         hotelMapper.updateEntityFromRequest(request, hotel);
         Hotel updatedHotel = hotelRepository.save(hotel);
         return hotelMapper.toDetailResponse(updatedHotel);
@@ -83,7 +83,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional
     public void activate(Long id) {
         Hotel hotel = hotelRepository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("Отель с id: " + id + " не найден"));
+                orElseThrow(() -> new NotFoundException("Отель с id: " + id + " не найден"));
         hotel.setActive(true);
         hotelRepository.save(hotel);
     }
@@ -92,7 +92,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional
     public void deactivate(Long id) {
         Hotel hotel = hotelRepository.findById(id).
-                orElseThrow(() -> new EntityNotFoundException("Отель с id: " + id + " не найден"));
+                orElseThrow(() -> new NotFoundException("Отель с id: " + id + " не найден"));
         hotel.setActive(false);
         hotelRepository.save(hotel);
     }

@@ -9,7 +9,7 @@ import edu.hotel.booking.mapper.RoomMapper;
 import edu.hotel.booking.model.RoomStatus;
 import edu.hotel.booking.repository.RoomRepository;
 import edu.hotel.booking.repository.RoomTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
+import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class RoomServiceImpl implements RoomService {
     @Transactional(readOnly = true)
     public List<RoomResponse> findRoomsByRoomTypeId(Long roomTypeId) {
         roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
 
         List<Room> rooms = roomRepository.findByRoomTypeId(roomTypeId);
 
@@ -43,7 +43,7 @@ public class RoomServiceImpl implements RoomService {
     @Transactional()
     public RoomResponse create(Long roomTypeId, RoomRequest request) {
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Тип номера с id: " + roomTypeId + " не найден"));
 
         Room room = roomMapper.toEntity(request);
         room.setRoomType(roomType);
@@ -57,7 +57,7 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     public RoomResponse update(Long id, RoomStatusRequest request) {
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Комната с id: " + id + " не найдена"));
+                .orElseThrow(() -> new NotFoundException("Комната с id: " + id + " не найдена"));
         room.setStatus(request.getStatus());
         Room updateRoom = roomRepository.save(room);
         return roomMapper.toResponse(updateRoom);
