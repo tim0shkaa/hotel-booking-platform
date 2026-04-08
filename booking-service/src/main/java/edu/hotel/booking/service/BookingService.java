@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public interface BookingService {
 
     // POST /bookings
-    BookingCreateResponse create(BookingCreateRequest request, Long guestId);
+    BookingCreateResponse create(BookingCreateRequest request, Long userId);
 
     // GET /bookings/{id}
     BookingDetailResponse getById(Long id);
@@ -26,9 +26,6 @@ public interface BookingService {
             LocalDate checkOut,
             Pageable pageable
     );
-
-    // GET guests/{guestId}/bookings
-    Page<BookingSummaryResponse> getHistoryBookings(Long guestId, Pageable pageable);
 
     // POST /bookings/{id}/cancel
     BookingDetailResponse cancelBooking(Long id);

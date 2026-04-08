@@ -42,11 +42,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingCreateResponse create(BookingCreateRequest request, Long guestId) {
+    public BookingCreateResponse create(BookingCreateRequest request, Long userId) {
         Booking booking = bookingMapper.toEntity(request);
 
-        Guest guest = guestRepository.findById(guestId)
-                .orElseThrow(() -> new NotFoundException("Гость с id: " + guestId + " не найден"));
+        Guest guest = guestRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("Гостя с id: " + userId + " не существует"));
 
         Tariff tariff = tariffRepository.findByIdAndRoomTypeId(request.getTariffId(), request.getRoomTypeId())
                 .orElseThrow(() -> new NotFoundException("Тариф с id: " + request.getTariffId() + " не найден или не принадлежит данному типу номера"));
@@ -91,13 +91,6 @@ public class BookingServiceImpl implements BookingService {
 
         Page<Booking> bookings = bookingRepository.findAllWithFilters(hotelId, statusStr, checkIn, checkOut, pageable);
 
-        return bookings.map(bookingMapper::toSummaryResponse);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<BookingSummaryResponse> getHistoryBookings(Long guestId, Pageable pageable) {
-        Page<Booking> bookings = bookingRepository.findByGuestId(guestId, pageable);
         return bookings.map(bookingMapper::toSummaryResponse);
     }
 

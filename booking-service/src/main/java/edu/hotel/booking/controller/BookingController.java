@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -26,8 +27,9 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<BookingCreateResponse> create(
             @Valid @RequestBody BookingCreateRequest request,
-            @RequestParam Long guestId) {
-        BookingCreateResponse response = bookingService.create(request, guestId);
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        BookingCreateResponse response = bookingService.create(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
