@@ -1,7 +1,6 @@
 package edu.hotel.payment.exception;
 
 import edu.hotel.common.dto.ErrorResponse;
-import edu.hotel.common.exception.AlreadyExistsException;
 import edu.hotel.common.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -15,6 +14,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
 
     @ExceptionHandler(InvalidPaymentStatusException.class)
     public ResponseEntity<ErrorResponse> handleInvalidPaymentStatus(

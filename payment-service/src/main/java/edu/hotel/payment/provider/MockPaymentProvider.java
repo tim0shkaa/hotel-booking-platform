@@ -13,7 +13,7 @@ public class MockPaymentProvider {
 
     private final PaymentResultHandler paymentResultHandler;
 
-    @Value("${provider.mock.delay-ms}")
+    @Value("${payment.mock.delay-ms}")
     private Long delayMs;
 
     @Value("${payment.mock.success-probability}")
