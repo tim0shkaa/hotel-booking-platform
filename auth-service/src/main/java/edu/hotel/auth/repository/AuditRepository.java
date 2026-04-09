@@ -19,10 +19,10 @@ public interface AuditRepository extends JpaRepository<AuditLog, Long> {
         """,
             countQuery = """
         SELECT COUNT(*) FROM audit_logs
-        WHERE (:userId IS NULL OR user_id = :userId)
-        AND (:action IS NULL OR action = :action)
-        AND (:from IS NULL OR created_at >= :from)
-        AND (:to IS NULL OR created_at <= :to)
+        WHERE (CAST(:userId AS BIGINT) IS NULL OR user_id = CAST(:userId AS BIGINT))
+        AND (CAST(:action AS VARCHAR) IS NULL OR action = CAST(:action AS VARCHAR))
+        AND (CAST(:from AS TIMESTAMP) IS NULL OR created_at >= CAST(:from AS TIMESTAMP))
+        AND (CAST(:to AS TIMESTAMP) IS NULL OR created_at <= CAST(:to AS TIMESTAMP))
         """,
             nativeQuery = true)
     Page<AuditLog> findAllWithFilters(

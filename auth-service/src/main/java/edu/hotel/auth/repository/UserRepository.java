@@ -20,8 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         """,
             countQuery = """
         SELECT COUNT(*) FROM users
-        WHERE (:role IS NULL OR role = :role)
-        AND (:active IS NULL OR active = :active)
+        WHERE (CAST(:role AS VARCHAR) IS NULL OR role = CAST(:role AS VARCHAR))
+        AND (CAST(:active AS BOOLEAN) IS NULL OR active = CAST(:active AS BOOLEAN))
         """,
             nativeQuery = true)
     Page<User> findAllWithFilters(

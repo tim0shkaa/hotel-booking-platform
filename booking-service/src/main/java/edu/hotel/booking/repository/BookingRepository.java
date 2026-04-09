@@ -34,10 +34,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             SELECT COUNT(*) FROM booking b
             JOIN room r ON r.id = b.room_id
             JOIN room_type rt ON rt.id = r.room_type_id
-            WHERE (:hotelId IS NULL OR rt.hotel_id = :hotelId)
-            AND (:status IS NULL OR b.status = :status)
-            AND (:dateFrom IS NULL OR b.check_in >= :dateFrom)
-            AND (:dateTo IS NULL OR b.check_out <= :dateTo)
+            WHERE (CAST(:hotelId AS BIGINT) IS NULL OR rt.hotel_id = CAST(:hotelId AS BIGINT))
+            AND (CAST(:status AS VARCHAR) IS NULL OR b.status = CAST(:status AS VARCHAR))
+            AND (CAST(:dateFrom AS DATE) IS NULL OR b.check_in >= CAST(:dateFrom AS DATE))
+            AND (CAST(:dateTo AS DATE) IS NULL OR b.check_out <= CAST(:dateTo AS DATE))
             """,
             nativeQuery = true)
     Page<Booking> findAllWithFilters(

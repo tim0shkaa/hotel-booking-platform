@@ -23,8 +23,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             """,
             countQuery = """
             SELECT COUNT(*) FROM hotels
-            WHERE (:city IS NULL OR city = :city)
-            AND (:starRating IS NULL OR star_rating = :starRating)
+            WHERE (CAST(:city AS VARCHAR) IS NULL OR city = CAST(:city AS VARCHAR))
+            AND (CAST(:starRating AS INTEGER) IS NULL OR star_rating = CAST(:starRating AS INTEGER))
             AND (:amenities IS NULL OR amenities @> CAST(:amenities AS jsonb))
             """,
             nativeQuery = true)
@@ -44,8 +44,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             countQuery = """
             SELECT COUNT(*) FROM hotels
             WHERE active = true
-            AND (:city IS NULL OR city = :city)
-            AND (:starRating IS NULL OR star_rating = :starRating)
+            AND (CAST(:city AS VARCHAR) IS NULL OR city = CAST(:city AS VARCHAR))
+            AND (CAST(:starRating AS INTEGER) IS NULL OR star_rating = CAST(:starRating AS INTEGER))
             AND (:amenities IS NULL OR amenities @> CAST(:amenities AS jsonb))
             """,
             nativeQuery = true)

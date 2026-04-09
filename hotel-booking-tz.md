@@ -156,12 +156,14 @@
 
 | Метод | Путь | Роль | Описание |
 |---|---|---|---|
-| POST | `/payments` | GUEST | Инициировать оплату бронирования. bookingId в теле. Создаёт Payment в PENDING. |
-| GET | `/payments/{id}` | GUEST (свой), ADMIN | Статус платежа. |
-| GET | `/payments/booking/{bookingId}` | GUEST (свой), ADMIN | Платёж по бронированию. |
-| POST | `/payments/{id}/refund` | ADMIN, GUEST | Запрос возврата. Полный или частичный (amount в теле). |
-| GET | `/refunds/{id}` | GUEST (свой), ADMIN | Статус возврата. |
-| GET | `/payments` | ADMIN | Список платежей с фильтрами и пагинацией. |
+| POST | `/payments` | GUEST | Инициировать оплату бронирования |
+| GET | `/payments/{id}` | GUEST, ADMIN | Статус платежа |
+| GET | `/payments/booking/{bookingId}` | GUEST, ADMIN | Платёж по бронированию |
+| GET | `/payments` | ADMIN | Список платежей с фильтрами |
+| POST | `/payments/{id}/refund` | GUEST, ADMIN | Запрос возврата |
+| POST | `/payments/{id}/retry` | GUEST | Повторная попытка оплаты |
+| GET | `/refunds/{id}` | GUEST, ADMIN | Статус возврата |
+| POST | `/refunds/{id}/retry` | GUEST | Повторная попытка возврата |
 
 ### 3.4 review-service
 

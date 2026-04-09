@@ -1,5 +1,6 @@
-package edu.hotel.auth.security;
+package edu.hotel.auth.config;
 
+import edu.hotel.auth.security.JwtAuthentificationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
