@@ -9,6 +9,7 @@ import edu.hotel.booking.entity.Guest;
 import edu.hotel.booking.entity.Room;
 import edu.hotel.booking.entity.Tariff;
 import edu.hotel.booking.exception.NotAvailableRoomsException;
+import edu.hotel.booking.kafka.BookingEventProducer;
 import edu.hotel.booking.mapper.BookingMapper;
 import edu.hotel.booking.model.BookingStatus;
 import edu.hotel.booking.repository.BookingRepository;
@@ -16,6 +17,10 @@ import edu.hotel.booking.repository.GuestRepository;
 import edu.hotel.booking.repository.RoomRepository;
 import edu.hotel.booking.repository.TariffRepository;
 import edu.hotel.common.exception.NotFoundException;
+import edu.hotel.common.model.KafkaTopics;
+import edu.hotel.events.BookingCancelledEvent;
+import edu.hotel.events.BookingCompletedEvent;
+import edu.hotel.events.BookingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +46,8 @@ public class BookingServiceImpl implements BookingService {
     private final TariffRepository tariffRepository;
 
     private final RoomRepository roomRepository;
+
+    private final BookingEventProducer bookingEventProducer;
 
     @Override
     @Transactional
@@ -68,6 +77,23 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING_PAYMENT);
 
         Booking savedBooking = bookingRepository.save(booking);
+
+        BookingCreatedEvent event = BookingCreatedEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(KafkaTopics.BOOKING_CREATED)
+                .bookingId(savedBooking.getId())
+                .guestId(guest.getId())
+                .hotelId(room.getRoomType().getHotel().getId())
+                .roomTypeId(room.getRoomType().getId())
+                .tariffId(tariff.getId())
+                .checkIn(booking.getCheckIn())
+                .checkOut(booking.getCheckOut())
+                .totalPrice(booking.getTotalPrice())
+                .currency(booking.getCurrency().name())
+                .occurredAt(LocalDateTime.now())
+                .build();
+
+        bookingEventProducer.sendBookingCreated(event);
 
         BookingCreateResponse response = new BookingCreateResponse();
         response.setBookingId(savedBooking.getId());
@@ -109,6 +135,18 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking updateBooking = bookingRepository.save(booking);
+
+        BookingCancelledEvent bookingCancelledEvent = BookingCancelledEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(KafkaTopics.BOOKING_CANCELLED)
+                .bookingId(booking.getId())
+                .guestId(booking.getGuest().getId())
+                .reason("Отменено пользователем")
+                .occurredAt(LocalDateTime.now())
+                .build();
+
+        bookingEventProducer.sendBookingCancelled(bookingCancelledEvent);
+
         return bookingMapper.toDetailResponse(updateBooking);
     }
 
@@ -143,6 +181,19 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus(BookingStatus.COMPLETED);
         Booking updateBooking = bookingRepository.save(booking);
+
+        BookingCompletedEvent bookingCompletedEvent = BookingCompletedEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .eventType(KafkaTopics.BOOKING_COMPLETED)
+                .bookingId(booking.getId())
+                .hotelId(booking.getRoom().getRoomType().getHotel().getId())
+                .roomTypeId(booking.getRoom().getRoomType().getId())
+                .guestId(booking.getGuest().getId())
+                .occurredAt(LocalDateTime.now())
+                .build();
+
+        bookingEventProducer.sendBookingCompleted(bookingCompletedEvent);
+
         return bookingMapper.toDetailResponse(updateBooking);
     }
 }
