@@ -7,9 +7,11 @@ import lombok.Setter;
 import lombok.ToString;
 import edu.hotel.booking.model.BookingStatus;
 import edu.hotel.booking.model.Currency;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "booking")
@@ -51,6 +53,10 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Currency currency;
+
+    @CreationTimestamp
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     @Column(columnDefinition = "text")
     private String notes;
