@@ -15,6 +15,43 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - hotel-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.7
+    container_name: hotel-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - hotel-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.7
+    container_name: hotel-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - hotel-network
 
   auth-service:
     build:
@@ -30,6 +67,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - hotel-network
 
   booking-service:
     build:
@@ -42,9 +81,14 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/booking_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - hotel-network
 
   payment-service:
     build:
@@ -57,9 +101,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payment_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - hotel-network
 
 volumes:
   postgres_data:
+
+networks:
+  hotel-network:
+    driver: bridge
