@@ -8,10 +8,15 @@ import edu.hotel.notification.model.EventType;
 import edu.hotel.notification.model.NotificationStatus;
 import edu.hotel.notification.repository.NotificationLogRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
@@ -61,18 +66,32 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationLog setNotificationLog(
             EventType eventType, Long guestId, Long bookingId, Object event) {
 
-        NotificationLog log = new NotificationLog();
-        log.setEventType(eventType);
-        log.setGuestId(guestId);
-        log.setBookingId(bookingId);
-        log.setStatus(NotificationStatus.SENT);
-        log.setRetryCount(0);
+        NotificationLog notificationLog = new NotificationLog();
+        notificationLog.setEventType(eventType);
+        notificationLog.setGuestId(guestId);
+        notificationLog.setBookingId(bookingId);
+        notificationLog.setRetryCount(0);
 
         try {
-            log.setPayload(objectMapper.writeValueAsString(event));
+            notificationLog.setPayload(objectMapper.writeValueAsString(event));
+            sendNotification(eventType, guestId);
+            notificationLog.setStatus(NotificationStatus.SENT);
         } catch (JsonProcessingException e) {
-            log.setPayload("serialization error");
+            notificationLog.setPayload("serialization error");
+        } catch (Exception e) {
+            notificationLog.setStatus(NotificationStatus.FAILED);
+            notificationLog.setNextRetryAt(LocalDateTime.now().plusMinutes(1));
         }
-        return log;
+
+        return notificationLog;
+    }
+
+    private void sendNotification(EventType eventType, Long guestId) {
+        log.info("Отправка уведомления [{}] гостю с id: {}", eventType, guestId);
+    }
+
+    public void retrySendNotification(NotificationLog notificationLog) {
+        log.info("Повторная отправка уведомления [{}] гостю с id: {}",
+                notificationLog.getEventType(), notificationLog.getGuestId());
     }
 }
