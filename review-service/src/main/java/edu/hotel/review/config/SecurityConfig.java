@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/room-types/*/reviews").authenticated()
                         .requestMatchers(HttpMethod.GET, "/hotels/*/rating").authenticated()
                         .requestMatchers(HttpMethod.POST, "/reviews/*/response").hasAnyRole("ADMIN", "HOTEL_MANAGER")
-                        .requestMatchers(HttpMethod.DELETE, "/reviews/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/reviews/*").hasAnyRole("ADMIN", "GUEST")
 
 
 
