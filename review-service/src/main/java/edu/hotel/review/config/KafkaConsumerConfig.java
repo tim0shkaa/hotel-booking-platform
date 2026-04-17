@@ -1,4 +1,4 @@
-package edu.hotel.booking.config;
+package edu.hotel.review.config;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.TopicPartition;
