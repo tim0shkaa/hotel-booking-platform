@@ -51,9 +51,6 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String body;
 
-    @Column(nullable = false)
-    private Boolean isVerified;
-
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime createdAt;

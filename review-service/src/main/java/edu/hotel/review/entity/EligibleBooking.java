@@ -28,6 +28,9 @@ public class EligibleBooking {
     private Long guestId;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private Long hotelId;
 
     @Column(nullable = false)
