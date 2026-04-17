@@ -21,6 +21,8 @@ public class BookingCompletedEvent {
 
     private Long guestId;
 
+    private Long userId;
+
     private Long hotelId;
 
     private Long roomTypeId;

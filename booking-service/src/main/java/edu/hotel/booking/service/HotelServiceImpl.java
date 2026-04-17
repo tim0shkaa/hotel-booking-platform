@@ -65,6 +65,7 @@ public class HotelServiceImpl implements HotelService {
     public HotelDetailResponse create(HotelRequest request) {
         Hotel hotel = hotelMapper.toEntity(request);
         hotel.setActive(false);
+        hotel.setTotalReviews(0);
         Hotel savedHotel = hotelRepository.save(hotel);
         return hotelMapper.toDetailResponse(savedHotel);
     }

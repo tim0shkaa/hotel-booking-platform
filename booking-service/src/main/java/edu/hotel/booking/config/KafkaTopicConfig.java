@@ -1,5 +1,6 @@
 package edu.hotel.booking.config;
 
+import edu.hotel.common.model.KafkaTopics;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCreatedTopic() {
-        return TopicBuilder.name("booking.created")
+        return TopicBuilder.name(KafkaTopics.BOOKING_CREATED)
                 .partitions(3)
                 .replicas(1)
                 .build();
@@ -18,7 +19,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCancelledTopic() {
-        return TopicBuilder.name("booking.cancelled")
+        return TopicBuilder.name(KafkaTopics.BOOKING_CANCELLED)
                 .partitions(3)
                 .replicas(1)
                 .build();
@@ -26,7 +27,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCompletedTopic() {
-        return TopicBuilder.name("booking.completed")
+        return TopicBuilder.name(KafkaTopics.BOOKING_COMPLETED)
                 .partitions(3)
                 .replicas(1)
                 .build();
@@ -34,7 +35,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCreatedDlq() {
-        return TopicBuilder.name("booking.created.dlq")
+        return TopicBuilder.name(KafkaTopics.BOOKING_CREATED_DLQ)
                 .partitions(1)
                 .replicas(1)
                 .build();
@@ -42,7 +43,7 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCancelledDlq() {
-        return TopicBuilder.name("booking.cancelled.dlq")
+        return TopicBuilder.name(KafkaTopics.BOOKING_CANCELLED_DLQ)
                 .partitions(1)
                 .replicas(1)
                 .build();
@@ -50,7 +51,15 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic bookingCompletedDlq() {
-        return TopicBuilder.name("booking.completed.dlq")
+        return TopicBuilder.name(KafkaTopics.BOOKING_COMPLETED_DLQ)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic reviewCreatedDlq() {
+        return TopicBuilder.name(KafkaTopics.REVIEW_CREATED_DLQ)
                 .partitions(1)
                 .replicas(1)
                 .build();

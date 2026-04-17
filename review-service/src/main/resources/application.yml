@@ -1,5 +1,31 @@
 spring:
   application:
     name: review-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/review_db
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: review-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "edu.hotel.events"
+
 server:
-  port: 8085
+  port: 8084
+
+jwt:
+  public-key: classpath:keys/public.pem

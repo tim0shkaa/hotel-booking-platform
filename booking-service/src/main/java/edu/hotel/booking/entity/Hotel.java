@@ -45,6 +45,9 @@ public class Hotel {
     private Double avgRating;
 
     @Column(nullable = false)
+    private Integer totalReviews;
+
+    @Column(nullable = false)
     private boolean active;
 
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)

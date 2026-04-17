@@ -1,0 +1,35 @@
+package edu.hotel.review.config;
+
+import edu.hotel.common.model.KafkaTopics;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
+
+@Configuration
+public class KafkaTopicConfig {
+
+    @Bean
+    public NewTopic bookingCompletedDlq() {
+        return TopicBuilder.name(KafkaTopics.BOOKING_COMPLETED_DLQ)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic reviewCreatedTopic() {
+        return TopicBuilder.name(KafkaTopics.REVIEW_CREATED)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic reviewCreatedDlq() {
+        return TopicBuilder.name(KafkaTopics.REVIEW_CREATED_DLQ)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+}

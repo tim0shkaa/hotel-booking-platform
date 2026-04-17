@@ -17,7 +17,6 @@ public class KafkaConsumerConfig {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-
     @Bean
     public DefaultErrorHandler errorHandler() {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(

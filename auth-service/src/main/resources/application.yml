@@ -18,5 +18,5 @@ server:
 jwt:
   private-key: classpath:keys/private.pem
   public-key: classpath:keys/public.pem
-  access-token-expiration: 1800000
+  access-token-expiration: 7200000
   refresh-token-expiration: 604800000

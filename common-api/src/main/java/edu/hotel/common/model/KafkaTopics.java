@@ -14,6 +14,7 @@ public final class KafkaTopics {
     public static final String BOOKING_COMPLETED_DLQ = "booking.completed.dlq";
     public static final String PAYMENT_CONFIRMED_DLQ = "payment.confirmed.dlq";
     public static final String PAYMENT_FAILED_DLQ = "payment.failed.dlq";
+    public static final String REVIEW_CREATED_DLQ = "review.created.dlq";
 
     private KafkaTopics() {}
 }

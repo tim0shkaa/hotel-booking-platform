@@ -130,6 +130,26 @@ services:
     networks:
       - hotel-network
 
+  review-service:
+    build:
+      context: .
+      dockerfile: review-service/Dockerfile
+    container_name: hotel-review-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/review_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - hotel-network
+
 volumes:
   postgres_data:
 

@@ -189,6 +189,7 @@ public class BookingServiceImpl implements BookingService {
                 .hotelId(booking.getRoom().getRoomType().getHotel().getId())
                 .roomTypeId(booking.getRoom().getRoomType().getId())
                 .guestId(booking.getGuest().getId())
+                .userId(booking.getGuest().getUserId())
                 .occurredAt(LocalDateTime.now())
                 .build();
 
