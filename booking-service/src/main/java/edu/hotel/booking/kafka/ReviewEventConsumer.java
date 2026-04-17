@@ -31,8 +31,9 @@ public class ReviewEventConsumer {
         Hotel hotel = hotelRepository.findById(event.getHotelId())
                 .orElseThrow(() -> new NotFoundException("Отеля с id: " + event.getEventId() + " не существует"));
 
-        Double newAvg = (hotel.getAvgRating() * hotel.getTotalReviews()
-                + event.getOverallRating()) / (hotel.getTotalReviews() + 1);
+        double currentAvg = hotel.getAvgRating() != null ? hotel.getAvgRating() : 0.0;
+        double newAvg = (currentAvg * hotel.getTotalReviews() + event.getOverallRating())
+                / (hotel.getTotalReviews() + 1);
 
         hotel.setAvgRating(newAvg);
 

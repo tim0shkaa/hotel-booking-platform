@@ -56,4 +56,12 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic reviewCreatedDlq() {
+        return TopicBuilder.name(KafkaTopics.REVIEW_CREATED_DLQ)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 }
