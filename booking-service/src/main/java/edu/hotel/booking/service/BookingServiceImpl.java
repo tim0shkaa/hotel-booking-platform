@@ -19,6 +19,7 @@ import edu.hotel.events.BookingCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -45,6 +47,8 @@ public class BookingServiceImpl implements BookingService {
     private final BookingEventProducer bookingEventProducer;
 
     private final BookingStatusHistoryService bookingStatusHistoryService;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
@@ -74,6 +78,8 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING_PAYMENT);
 
         Booking savedBooking = bookingRepository.save(booking);
+
+        evictAvailableCache(room.getRoomType().getHotel().getId());
 
         BookingCreatedEvent event = BookingCreatedEvent.builder()
                 .eventId(UUID.randomUUID().toString())
@@ -144,7 +150,10 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
+
         Booking updateBooking = bookingRepository.save(booking);
+
+        evictAvailableCache(booking.getRoom().getRoomType().getHotel().getId());
 
         BookingCancelledEvent bookingCancelledEvent = BookingCancelledEvent.builder()
                 .eventId(UUID.randomUUID().toString())
@@ -216,5 +225,14 @@ public class BookingServiceImpl implements BookingService {
                 userId.toString(), "Гость выехал");
 
         return bookingMapper.toDetailResponse(updateBooking);
+    }
+
+    private void evictAvailableCache(Long hotelId) {
+        String indexKey = "Available:keys:" + hotelId;
+        Set<Object> keys = redisTemplate.opsForSet().members(indexKey);
+        if (keys != null) {
+            keys.forEach(key -> redisTemplate.delete(key.toString()));
+        }
+        redisTemplate.delete(indexKey);
     }
 }
