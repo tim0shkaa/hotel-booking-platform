@@ -7,6 +7,8 @@ import edu.hotel.review.mapper.RatingAggregateMapper;
 import edu.hotel.review.model.TargetType;
 import edu.hotel.review.repository.RatingAggregateRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class RatingAggregateServiceImpl implements RatingAggregateService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "rating", key = "#hotelId")
     public void updateRating(Review review) {
 
         ratingAggregateRepository.save(setRatingAggregate(TargetType.HOTEL, review));
@@ -32,6 +35,7 @@ public class RatingAggregateServiceImpl implements RatingAggregateService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "rating", key = "#hotelId")
     public RatingAggregateResponse ratingByHotelId(Long hotelId) {
 
         RatingAggregate ratingAggregate = ratingAggregateRepository
