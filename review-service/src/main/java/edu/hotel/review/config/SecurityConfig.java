@@ -30,10 +30,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(HttpMethod.POST, "/reviews").hasRole("GUEST")
-                        .requestMatchers(HttpMethod.GET, "/reviews/*").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/hotels/*/reviews").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/room-types/*/reviews").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/hotels/*/rating").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/reviews/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/hotels/*/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/room-types/*/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/hotels/*/rating").permitAll()
                         .requestMatchers(HttpMethod.POST, "/reviews/*/response").hasAnyRole("ADMIN", "HOTEL_MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/reviews/*").hasAnyRole("ADMIN", "GUEST")
 

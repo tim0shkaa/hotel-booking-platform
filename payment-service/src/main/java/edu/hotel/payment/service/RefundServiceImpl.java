@@ -1,5 +1,6 @@
 package edu.hotel.payment.service;
 
+import edu.hotel.common.exception.AccessDeniedException;
 import edu.hotel.common.exception.NotFoundException;
 import edu.hotel.payment.dto.refund.RefundResponse;
 import edu.hotel.payment.entity.Payment;
@@ -66,17 +67,19 @@ public class RefundServiceImpl implements RefundService {
 
     @Override
     @Transactional
-    public RefundResponse retryRefund(Long refundId) {
-
-        Refund refund = refundRepository.findById(refundId)
+    public RefundResponse retryRefund(Long refundId, Long userId, String role) {
+        Refund refund = refundRepository.findWithPaymentById(refundId)
                 .orElseThrow(() -> new NotFoundException("Возврата с refundId: " + refundId + " не существует"));
+
+        if (role.equals("ROLE_GUEST") && !refund.getPayment().getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому возврату");
+        }
 
         if (refund.getStatus() != RefundStatus.FAILED) {
             throw new InvalidRefundStatusException("Статус возврата не FAILED");
         }
 
         refund.setStatus(RefundStatus.PROCESSING);
-
         mockPaymentProvider.processRefund(refundId);
 
         return refundMapper.toResponse(refund);
@@ -84,9 +87,13 @@ public class RefundServiceImpl implements RefundService {
 
     @Override
     @Transactional(readOnly = true)
-    public RefundResponse getRefundById(Long refundId) {
-        Refund refund = refundRepository.findById(refundId)
+    public RefundResponse getRefundById(Long refundId, Long userId, String role) {
+        Refund refund = refundRepository.findWithPaymentById(refundId)
                 .orElseThrow(() -> new NotFoundException("Возврата с refundId: " + refundId + " не существует"));
+
+        if (role.equals("ROLE_GUEST") && !refund.getPayment().getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому возврату");
+        }
 
         return refundMapper.toResponse(refund);
     }

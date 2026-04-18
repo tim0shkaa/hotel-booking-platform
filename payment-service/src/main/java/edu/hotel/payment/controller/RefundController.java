@@ -6,6 +6,7 @@ import edu.hotel.payment.service.RefundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,21 +18,26 @@ public class RefundController {
     @PostMapping("/payments/{id}/refund")
     public ResponseEntity<RefundResponse> requestRefund(
             @PathVariable("id") Long id,
-            @RequestBody RefundRequest request
-    ) {
+            @RequestBody RefundRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(refundService.requestRefund(id, request.getAmount(), request.getReason()));
     }
 
     @GetMapping("/refunds/{id}")
     public ResponseEntity<RefundResponse> getRefundById(
-            @PathVariable("id") Long id) {
-        return ResponseEntity.ok(refundService.getRefundById(id));
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(refundService.getRefundById(id, userId, role));
     }
 
     @PostMapping("/refunds/{id}/retry")
     public ResponseEntity<RefundResponse> retryRefund(
-            @PathVariable("id") Long id) {
-        return ResponseEntity.ok(refundService.retryRefund(id));
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(refundService.retryRefund(id, userId, role));
     }
 }

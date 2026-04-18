@@ -4,18 +4,13 @@ import edu.hotel.booking.dto.booking.BookingCreateRequest;
 import edu.hotel.booking.dto.booking.BookingCreateResponse;
 import edu.hotel.booking.dto.booking.BookingDetailResponse;
 import edu.hotel.booking.dto.booking.BookingSummaryResponse;
-import edu.hotel.booking.entity.Booking;
-import edu.hotel.booking.entity.Guest;
-import edu.hotel.booking.entity.Room;
-import edu.hotel.booking.entity.Tariff;
+import edu.hotel.booking.entity.*;
 import edu.hotel.booking.exception.NotAvailableRoomsException;
 import edu.hotel.booking.kafka.BookingEventProducer;
 import edu.hotel.booking.mapper.BookingMapper;
 import edu.hotel.booking.model.BookingStatus;
-import edu.hotel.booking.repository.BookingRepository;
-import edu.hotel.booking.repository.GuestRepository;
-import edu.hotel.booking.repository.RoomRepository;
-import edu.hotel.booking.repository.TariffRepository;
+import edu.hotel.booking.repository.*;
+import edu.hotel.common.exception.AccessDeniedException;
 import edu.hotel.common.exception.NotFoundException;
 import edu.hotel.common.model.KafkaTopics;
 import edu.hotel.events.BookingCancelledEvent;
@@ -48,6 +43,8 @@ public class BookingServiceImpl implements BookingService {
     private final RoomRepository roomRepository;
 
     private final BookingEventProducer bookingEventProducer;
+
+    private final BookingStatusHistoryService bookingStatusHistoryService;
 
     @Override
     @Transactional
@@ -82,6 +79,7 @@ public class BookingServiceImpl implements BookingService {
                 .eventId(UUID.randomUUID().toString())
                 .eventType(KafkaTopics.BOOKING_CREATED)
                 .bookingId(savedBooking.getId())
+                .userId(userId)
                 .guestId(guest.getId())
                 .hotelId(room.getRoomType().getHotel().getId())
                 .roomTypeId(room.getRoomType().getId())
@@ -95,6 +93,9 @@ public class BookingServiceImpl implements BookingService {
 
         bookingEventProducer.sendBookingCreated(event);
 
+        bookingStatusHistoryService.saveStatusHistory(savedBooking, BookingStatus.PENDING_PAYMENT,
+                userId.toString(), "Бронирование создано");
+
         BookingCreateResponse response = new BookingCreateResponse();
         response.setBookingId(savedBooking.getId());
         response.setPaymentUrl("https://payment.example.com/pay/" + savedBooking.getId());
@@ -103,9 +104,14 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public BookingDetailResponse getById(Long id) {
+    public BookingDetailResponse getById(Long id, Long userId, String role) {
+
         Booking booking = bookingRepository.findDetailById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
+
+        if (role.equals("ROLE_GUEST") && !booking.getGuest().getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому бронированию");
+        }
 
         return bookingMapper.toDetailResponse(booking);
     }
@@ -122,9 +128,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDetailResponse cancelBooking(Long id) {
+    public BookingDetailResponse cancelBooking(Long id, Long userId, String role) {
         Booking booking = bookingRepository.findDetailById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
+
+        if (role.equals("ROLE_GUEST") && !booking.getGuest().getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому бронированию");
+        }
 
         if (booking.getStatus() != BookingStatus.PENDING_PAYMENT &&
                 booking.getStatus() != BookingStatus.CONFIRMED) {
@@ -147,12 +157,15 @@ public class BookingServiceImpl implements BookingService {
 
         bookingEventProducer.sendBookingCancelled(bookingCancelledEvent);
 
+        bookingStatusHistoryService.saveStatusHistory(updateBooking, BookingStatus.CANCELLED,
+                userId.toString(), "Бронирование отменено");
+
         return bookingMapper.toDetailResponse(updateBooking);
     }
 
     @Override
     @Transactional
-    public BookingDetailResponse checkInById(Long id) {
+    public BookingDetailResponse checkInById(Long id, Long userId) {
         Booking booking = bookingRepository.findDetailById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
@@ -164,12 +177,16 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setStatus(BookingStatus.CHECKED_IN);
         Booking updateBooking = bookingRepository.save(booking);
+
+        bookingStatusHistoryService.saveStatusHistory(updateBooking, BookingStatus.CHECKED_IN,
+                userId.toString(), "Гость заехал");
+
         return bookingMapper.toDetailResponse(updateBooking);
     }
 
     @Override
     @Transactional
-    public BookingDetailResponse checkOutById(Long id) {
+    public BookingDetailResponse checkOutById(Long id, Long userId) {
         Booking booking = bookingRepository.findDetailById(id)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id: " + id + " не найдено"));
 
@@ -194,6 +211,9 @@ public class BookingServiceImpl implements BookingService {
                 .build();
 
         bookingEventProducer.sendBookingCompleted(bookingCompletedEvent);
+
+        bookingStatusHistoryService.saveStatusHistory(updateBooking, BookingStatus.COMPLETED,
+                userId.toString(), "Гость выехал");
 
         return bookingMapper.toDetailResponse(updateBooking);
     }

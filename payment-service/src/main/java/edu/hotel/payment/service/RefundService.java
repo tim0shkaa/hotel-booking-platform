@@ -10,8 +10,8 @@ public interface RefundService {
     RefundResponse requestRefund(Long paymentId, BigDecimal amount, String reason);
 
     // POST /refunds/{id}/retry
-    RefundResponse retryRefund(Long refundId);
+    RefundResponse retryRefund(Long refundId, Long userId, String role);
 
     // GET /refunds/{id}
-    RefundResponse getRefundById(Long refundId);
+    RefundResponse getRefundById(Long refundId, Long userId, String role);
 }

@@ -22,34 +22,33 @@ import java.util.Optional;
 public class BookingEventConsumer {
 
     private final ProcessedEventRepository processedEventRepository;
-
     private final PaymentService paymentService;
-
     private final PaymentRepository paymentRepository;
-
     private final RefundService refundService;
 
     @Transactional
     @KafkaListener(topics = KafkaTopics.BOOKING_CREATED, groupId = "payment-service-group")
     public void handleBookingCreated(BookingCreatedEvent event) {
-
         if (processedEventRepository.existsByEventId(event.getEventId())) {
             return;
         }
 
-        paymentService.initiatePayment(event.getBookingId(), event.getGuestId(),
-                event.getTotalPrice(), event.getCurrency());
+        paymentService.initiatePayment(
+                event.getBookingId(),
+                event.getGuestId(),
+                event.getUserId(),
+                event.getTotalPrice(),
+                event.getCurrency()
+        );
 
         ProcessedEvent processedEvent = new ProcessedEvent();
         processedEvent.setEventId(event.getEventId());
-
         processedEventRepository.save(processedEvent);
     }
 
     @Transactional
     @KafkaListener(topics = KafkaTopics.BOOKING_CANCELLED, groupId = "payment-service-group")
     public void handleBookingCancelled(BookingCancelledEvent event) {
-
         if (processedEventRepository.existsByEventId(event.getEventId())) {
             return;
         }
@@ -66,7 +65,6 @@ public class BookingEventConsumer {
 
         ProcessedEvent processedEvent = new ProcessedEvent();
         processedEvent.setEventId(event.getEventId());
-
         processedEventRepository.save(processedEvent);
     }
 }

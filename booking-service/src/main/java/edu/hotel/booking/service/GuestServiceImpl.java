@@ -9,6 +9,7 @@ import edu.hotel.booking.mapper.BookingMapper;
 import edu.hotel.booking.mapper.GuestMapper;
 import edu.hotel.booking.repository.BookingRepository;
 import edu.hotel.booking.repository.GuestRepository;
+import edu.hotel.common.exception.AccessDeniedException;
 import edu.hotel.common.exception.AlreadyExistsException;
 import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,16 @@ public class GuestServiceImpl implements GuestService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookingSummaryResponse> getHistoryBookings(Long guestId, Pageable pageable) {
+    public Page<BookingSummaryResponse> getHistoryBookings(
+            Long guestId, Long userId, String role, Pageable pageable) {
+
+        Guest guest = guestRepository.findById(guestId)
+                .orElseThrow(() -> new NotFoundException("Гость с id: " + guestId + " не найден"));
+
+        if (role.equals("ROLE_GUEST") && !guest.getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужим бронированиям");
+        }
+
         Page<Booking> bookings = bookingRepository.findByGuestId(guestId, pageable);
         return bookings.map(bookingMapper::toSummaryResponse);
     }

@@ -10,19 +10,19 @@ import java.math.BigDecimal;
 public interface PaymentService {
 
     // Вызывается из KafkaConsumer при получении booking.created
-    void initiatePayment(Long bookingId, Long guestId, BigDecimal amount, String currency);
+    void initiatePayment(Long bookingId, Long guestId, Long userId, BigDecimal amount, String currency);
 
     // POST /payments
     PaymentResponse processPayment(PaymentRequest request);
 
     // POST /payments/{id}/retry
-    PaymentResponse retryPayment(Long paymentId);
+    PaymentResponse retryPayment(Long paymentId, Long userId, String role);
 
     // GET /payments/{id}
-    PaymentResponse findPaymentByPaymentId(Long paymentId);
+    PaymentResponse findPaymentByPaymentId(Long paymentId, Long userId, String role);
 
     // GET /payments/booking/{bookingId}
-    PaymentResponse findPaymentByBookingId(Long bookingId);
+    PaymentResponse findPaymentByBookingId(Long bookingId, Long userId, String role);
 
     // GET /payments
     Page<PaymentResponse> getAllPayments(Long guestId, Pageable pageable);

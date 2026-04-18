@@ -1,5 +1,6 @@
 package edu.hotel.payment.service;
 
+import edu.hotel.common.exception.AccessDeniedException;
 import edu.hotel.common.exception.NotFoundException;
 import edu.hotel.payment.dto.payment.PaymentRequest;
 import edu.hotel.payment.dto.payment.PaymentResponse;
@@ -29,17 +30,13 @@ public class PaymentServiceImpl implements PaymentService {
     private String mockProvider;
 
     private final PaymentRepository paymentRepository;
-
     private final MockPaymentProvider mockPaymentProvider;
-
     private final PaymentAttemptRepository paymentAttemptRepository;
-
     private final PaymentMapper paymentMapper;
 
     @Override
     @Transactional
-    public void initiatePayment(Long bookingId, Long guestId, BigDecimal amount, String currency) {
-
+    public void initiatePayment(Long bookingId, Long guestId, Long userId, BigDecimal amount, String currency) {
         if (paymentRepository.findByBookingId(bookingId).isPresent()) {
             return;
         }
@@ -47,6 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = new Payment();
         payment.setBookingId(bookingId);
         payment.setGuestId(guestId);
+        payment.setUserId(userId);
         payment.setAmount(amount);
         payment.setCurrency(currency);
         payment.setStatus(PaymentStatus.PENDING);
@@ -58,7 +56,6 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentResponse processPayment(PaymentRequest request) {
-
         Long bookingId = request.getBookingId();
 
         Payment payment = paymentRepository.findByBookingId(bookingId)
@@ -83,9 +80,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse retryPayment(Long paymentId) {
+    public PaymentResponse retryPayment(Long paymentId, Long userId, String role) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Платежа с paymentId: " + paymentId + " не существует"));
+
+        if (role.equals("ROLE_GUEST") && !payment.getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому платежу");
+        }
 
         if (payment.getStatus() != PaymentStatus.FAILED) {
             throw new InvalidPaymentStatusException("Статус платежа не FAILED");
@@ -110,17 +111,27 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaymentResponse findPaymentByPaymentId(Long paymentId) {
+    public PaymentResponse findPaymentByPaymentId(Long paymentId, Long userId, String role) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NotFoundException("Платежа с paymentId: " + paymentId + " не существует"));
+
+        if (role.equals("ROLE_GUEST") && !payment.getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому платежу");
+        }
+
         return paymentMapper.toResponse(payment);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PaymentResponse findPaymentByBookingId(Long bookingId) {
+    public PaymentResponse findPaymentByBookingId(Long bookingId, Long userId, String role) {
         Payment payment = paymentRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new NotFoundException("Платежа с bookingId: " + bookingId + " не существует"));
+
+        if (role.equals("ROLE_GUEST") && !payment.getUserId().equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к чужому платежу");
+        }
+
         return paymentMapper.toResponse(payment);
     }
 

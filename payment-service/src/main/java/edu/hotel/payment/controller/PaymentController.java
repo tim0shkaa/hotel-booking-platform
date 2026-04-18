@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,27 +27,35 @@ public class PaymentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PaymentResponse> findPaymentByPaymentId(
-            @PathVariable("id") Long id) {
-        return ResponseEntity.ok(paymentService.findPaymentByPaymentId(id));
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(paymentService.findPaymentByPaymentId(id, userId, role));
     }
 
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<PaymentResponse> findPaymentByBookingId(
-            @PathVariable("bookingId") Long bookingId) {
-        return ResponseEntity.ok(paymentService.findPaymentByBookingId(bookingId));
+            @PathVariable("bookingId") Long bookingId,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(paymentService.findPaymentByBookingId(bookingId, userId, role));
     }
 
     @GetMapping
     public ResponseEntity<Page<PaymentResponse>> getAllPayments(
             @RequestParam(required = false) Long guestId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         return ResponseEntity.ok(paymentService.getAllPayments(guestId, pageable));
     }
 
     @PostMapping("/{id}/retry")
     public ResponseEntity<PaymentResponse> retryPayment(
-            @PathVariable("id") Long id) {
-        return ResponseEntity.ok(paymentService.retryPayment(id));
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(paymentService.retryPayment(id, userId, role));
     }
 }

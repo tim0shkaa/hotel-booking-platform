@@ -5,6 +5,7 @@ import edu.hotel.booking.entity.ProcessedEvent;
 import edu.hotel.booking.model.BookingStatus;
 import edu.hotel.booking.repository.BookingRepository;
 import edu.hotel.booking.repository.ProcessedEventRepository;
+import edu.hotel.booking.service.BookingStatusHistoryService;
 import edu.hotel.common.model.KafkaTopics;
 import edu.hotel.events.PaymentConfirmedEvent;
 import edu.hotel.events.PaymentFailedEvent;
@@ -22,6 +23,8 @@ public class PaymentEventConsumer {
     private final BookingRepository bookingRepository;
 
     private final ProcessedEventRepository processedEventRepository;
+
+    private final BookingStatusHistoryService bookingStatusHistoryService;
 
     @KafkaListener(topics = KafkaTopics.PAYMENT_CONFIRMED, groupId = "booking-service-group")
     @Transactional
@@ -43,6 +46,9 @@ public class PaymentEventConsumer {
         ProcessedEvent processedEvent = new ProcessedEvent();
         processedEvent.setEventId(event.getEventId());
 
+        bookingStatusHistoryService.saveStatusHistory(booking, BookingStatus.CONFIRMED,
+                "system", "Оплата прошла успешно");
+
         processedEventRepository.save(processedEvent);
     }
 
@@ -61,6 +67,9 @@ public class PaymentEventConsumer {
 
         ProcessedEvent processedEvent = new ProcessedEvent();
         processedEvent.setEventId(event.getEventId());
+
+        bookingStatusHistoryService.saveStatusHistory(bookingOpt.get(), BookingStatus.PENDING_PAYMENT,
+                "system", "Попытка оплаты не удалась");
 
         processedEventRepository.save(processedEvent);
     }

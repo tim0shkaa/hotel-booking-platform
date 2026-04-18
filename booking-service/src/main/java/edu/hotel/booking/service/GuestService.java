@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface GuestService {
 
     // GET /guests/{guestId}/bookings
-    Page<BookingSummaryResponse> getHistoryBookings(Long guestId, Pageable pageable);
+    Page<BookingSummaryResponse> getHistoryBookings(Long guestId, Long userId, String role, Pageable pageable);
 
     // POST /guests
     GuestResponse create(Long userId, GuestRequest request);
