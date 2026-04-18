@@ -21,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
@@ -47,6 +49,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
 
     private final AuditLogMapper auditLogMapper;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
@@ -159,7 +163,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void logout(
-            String refreshToken, String ipAddress, String userAgent) {
+            String refreshToken, String ipAddress, String userAgent, String accessToken) {
 
         String hashToken = jwtService.hashToken(refreshToken);
 
@@ -171,6 +175,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         existToken.setRevoked(true);
+
+        redisTemplate.opsForValue().set(
+                "blacklist:" + accessToken,
+                "revoked",
+                Duration.ofMillis(jwtService.getAccessTokenExpiration())
+        );
+
         refreshTokenRepository.save(existToken);
 
         saveAuditLog(existToken.getUser(), Action.LOGOUT, ipAddress, userAgent);

@@ -1,6 +1,5 @@
 package edu.hotel.review.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +15,7 @@ import java.util.Map;
 
 @Configuration
 @EnableCaching
-@RequiredArgsConstructor
 public class RedisConfig {
-
-    private final RedisConnectionFactory connectionFactory;
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {

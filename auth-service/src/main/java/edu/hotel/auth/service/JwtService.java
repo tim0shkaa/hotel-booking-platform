@@ -3,8 +3,10 @@ package edu.hotel.auth.service;
 import edu.hotel.auth.entity.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -25,10 +27,12 @@ public class JwtService {
 
     private final RSAPrivateKey privateKey;
 
+    @Getter
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
     public String generateAccessToken(User user) {
+
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("roles", List.of(user.getRole().name()))

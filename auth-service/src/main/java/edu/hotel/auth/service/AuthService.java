@@ -23,7 +23,7 @@ public interface AuthService {
     AuthResponse refresh(RefreshRequest request, String ipAddress, String userAgent);
 
     // POST /auth/logout
-    void logout(String refreshToken, String ipAddress, String userAgent);
+    void logout(String refreshToken, String ipAddress, String userAgent, String accessToken);
 
     // GET /users/me
     UserResponse getCurrentUserData(Long userId);

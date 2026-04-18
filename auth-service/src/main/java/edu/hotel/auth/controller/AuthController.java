@@ -65,8 +65,9 @@ public class AuthController {
 
         String ip = httpRequest.getRemoteAddr();
         String userAgent = httpRequest.getHeader("User-Agent");
+        String accessToken = httpRequest.getHeader("Authorization").substring(7);
 
-        authService.logout(request.getRefreshToken(), ip, userAgent);
+        authService.logout(request.getRefreshToken(), accessToken, ip, userAgent);
         return ResponseEntity.ok().build();
     }
 
