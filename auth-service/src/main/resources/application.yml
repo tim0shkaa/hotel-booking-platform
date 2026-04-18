@@ -11,6 +11,12 @@ spring:
       ddl-auto: validate
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  data:
+    redis:
+      host: localhost
+      port: 6379
+    cache:
+      type: redis
 
 server:
   port: 8080

@@ -17,8 +17,11 @@ import edu.hotel.events.BookingCancelledEvent;
 import edu.hotel.events.BookingCompletedEvent;
 import edu.hotel.events.BookingCreatedEvent;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -46,6 +50,10 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingStatusHistoryService bookingStatusHistoryService;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final RedissonClient redissonClient;
+
     @Override
     @Transactional
     public BookingCreateResponse create(BookingCreateRequest request, Long userId) {
@@ -57,49 +65,63 @@ public class BookingServiceImpl implements BookingService {
         Tariff tariff = tariffRepository.findByIdAndRoomTypeId(request.getTariffId(), request.getRoomTypeId())
                 .orElseThrow(() -> new NotFoundException("Тариф с id: " + request.getTariffId() + " не найден или не принадлежит данному типу номера"));
 
-        Room room = roomRepository.findFirstAvailableRoom(request.getRoomTypeId(), request.getCheckIn(), request.getCheckOut())
-                .orElseThrow(() -> new NotAvailableRoomsException(
-                        "Нет доступных номеров для типа " + request.getRoomTypeId() + " на даты: "
-                                + request.getCheckIn() + " - " + request.getCheckOut()
-                ));
+        String lockKey = "lock:availability:" + request.getRoomTypeId()
+                + ":" + request.getCheckIn()
+                + ":" + request.getCheckOut();
 
-        long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
-        BigDecimal totalPrice = tariff.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+        RLock lock = redissonClient.getLock(lockKey);
+        lock.lock();
 
-        booking.setTariff(tariff);
-        booking.setTotalPrice(totalPrice);
-        booking.setCurrency(tariff.getCurrency());
-        booking.setRoom(room);
-        booking.setGuest(guest);
-        booking.setStatus(BookingStatus.PENDING_PAYMENT);
+        try {
+            Room room = roomRepository.findFirstAvailableRoom(request.getRoomTypeId(), request.getCheckIn(), request.getCheckOut())
+                    .orElseThrow(() -> new NotAvailableRoomsException(
+                            "Нет доступных номеров для типа " + request.getRoomTypeId() + " на даты: "
+                                    + request.getCheckIn() + " - " + request.getCheckOut()
+                    ));
 
-        Booking savedBooking = bookingRepository.save(booking);
+            long nights = ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+            BigDecimal totalPrice = tariff.getPricePerNight().multiply(BigDecimal.valueOf(nights));
 
-        BookingCreatedEvent event = BookingCreatedEvent.builder()
-                .eventId(UUID.randomUUID().toString())
-                .eventType(KafkaTopics.BOOKING_CREATED)
-                .bookingId(savedBooking.getId())
-                .userId(userId)
-                .guestId(guest.getId())
-                .hotelId(room.getRoomType().getHotel().getId())
-                .roomTypeId(room.getRoomType().getId())
-                .tariffId(tariff.getId())
-                .checkIn(booking.getCheckIn())
-                .checkOut(booking.getCheckOut())
-                .totalPrice(booking.getTotalPrice())
-                .currency(booking.getCurrency().name())
-                .occurredAt(LocalDateTime.now())
-                .build();
+            booking.setTariff(tariff);
+            booking.setTotalPrice(totalPrice);
+            booking.setCurrency(tariff.getCurrency());
+            booking.setRoom(room);
+            booking.setGuest(guest);
+            booking.setStatus(BookingStatus.PENDING_PAYMENT);
 
-        bookingEventProducer.sendBookingCreated(event);
+            Booking savedBooking = bookingRepository.save(booking);
 
-        bookingStatusHistoryService.saveStatusHistory(savedBooking, BookingStatus.PENDING_PAYMENT,
-                userId.toString(), "Бронирование создано");
+            evictAvailableCache(room.getRoomType().getHotel().getId());
 
-        BookingCreateResponse response = new BookingCreateResponse();
-        response.setBookingId(savedBooking.getId());
-        response.setPaymentUrl("https://payment.example.com/pay/" + savedBooking.getId());
-        return response;
+            BookingCreatedEvent event = BookingCreatedEvent.builder()
+                    .eventId(UUID.randomUUID().toString())
+                    .eventType(KafkaTopics.BOOKING_CREATED)
+                    .bookingId(savedBooking.getId())
+                    .userId(userId)
+                    .guestId(guest.getId())
+                    .hotelId(room.getRoomType().getHotel().getId())
+                    .roomTypeId(room.getRoomType().getId())
+                    .tariffId(tariff.getId())
+                    .checkIn(booking.getCheckIn())
+                    .checkOut(booking.getCheckOut())
+                    .totalPrice(booking.getTotalPrice())
+                    .currency(booking.getCurrency().name())
+                    .occurredAt(LocalDateTime.now())
+                    .build();
+
+            bookingEventProducer.sendBookingCreated(event);
+
+            bookingStatusHistoryService.saveStatusHistory(savedBooking, BookingStatus.PENDING_PAYMENT,
+                    userId.toString(), "Бронирование создано");
+
+            BookingCreateResponse response = new BookingCreateResponse();
+            response.setBookingId(savedBooking.getId());
+            response.setPaymentUrl("https://payment.example.com/pay/" + savedBooking.getId());
+            return response;
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -144,7 +166,10 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
+
         Booking updateBooking = bookingRepository.save(booking);
+
+        evictAvailableCache(booking.getRoom().getRoomType().getHotel().getId());
 
         BookingCancelledEvent bookingCancelledEvent = BookingCancelledEvent.builder()
                 .eventId(UUID.randomUUID().toString())
@@ -216,5 +241,14 @@ public class BookingServiceImpl implements BookingService {
                 userId.toString(), "Гость выехал");
 
         return bookingMapper.toDetailResponse(updateBooking);
+    }
+
+    private void evictAvailableCache(Long hotelId) {
+        String indexKey = "Available:keys:" + hotelId;
+        Set<Object> keys = redisTemplate.opsForSet().members(indexKey);
+        if (keys != null) {
+            keys.forEach(key -> redisTemplate.delete(key.toString()));
+        }
+        redisTemplate.delete(indexKey);
     }
 }

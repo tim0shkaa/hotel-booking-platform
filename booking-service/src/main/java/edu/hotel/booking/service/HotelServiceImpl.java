@@ -11,6 +11,8 @@ import edu.hotel.booking.repository.HotelRepository;
 import edu.hotel.booking.repository.RoomTypeRepository;
 import edu.hotel.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,9 @@ public class HotelServiceImpl implements HotelService {
         return hotels.map(hotelMapper::toSummaryResponse);
     }
 
+
     @Override
+    @Cacheable(value = "hotels", key = "#id")
     @Transactional(readOnly = true)
     public HotelDetailResponse getHotelById(Long id) {
         Hotel hotel = hotelRepository.findWithRoomsTypesById(id)
@@ -71,6 +75,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @CacheEvict(value = "hotels", key = "#id")
     @Transactional
     public HotelDetailResponse update(Long id, HotelRequest request) {
         Hotel hotel = hotelRepository.findById(id).
@@ -81,6 +86,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @CacheEvict(value = "hotels", key = "#id")
     @Transactional
     public void activate(Long id) {
         Hotel hotel = hotelRepository.findById(id).
@@ -90,6 +96,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @CacheEvict(value = "hotels", key = "#id")
     @Transactional
     public void deactivate(Long id) {
         Hotel hotel = hotelRepository.findById(id).
