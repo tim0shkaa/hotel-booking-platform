@@ -40,7 +40,7 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (redisTemplate.hasKey("blacklist:" + token)) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 

@@ -50,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuditLogMapper auditLogMapper;
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional

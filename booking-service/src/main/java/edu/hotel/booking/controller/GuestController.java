@@ -24,8 +24,11 @@ public class GuestController {
     @GetMapping("/{guestId}/bookings")
     public ResponseEntity<Page<BookingSummaryResponse>> getHistoryBookings(
             @PathVariable Long guestId,
+            Authentication authentication,
             Pageable pageable) {
-        return ResponseEntity.ok(guestService.getHistoryBookings(guestId, pageable));
+        Long userId = (Long) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        return ResponseEntity.ok(guestService.getHistoryBookings(guestId, userId, role, pageable));
     }
 
     @PostMapping

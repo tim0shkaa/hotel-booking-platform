@@ -5,7 +5,9 @@ import edu.hotel.booking.entity.BookingStatusHistory;
 import edu.hotel.booking.model.BookingStatus;
 import edu.hotel.booking.repository.BookingStatusHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class BookingStatusHistoryServiceImpl implements BookingStatusHistoryService {
 
