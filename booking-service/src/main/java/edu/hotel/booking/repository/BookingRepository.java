@@ -19,7 +19,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Page<Booking> findByGuestId(Long guestId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"room", "room.roomType", "room.roomType.hotel", "guest", "tariff"})
+    @EntityGraph(attributePaths = {"room", "room.roomType", "room.roomType.hotel"
+            , "guest", "tariff", "statusHistories"})
     Optional<Booking> findDetailById(Long id);
 
     @Query(value = """

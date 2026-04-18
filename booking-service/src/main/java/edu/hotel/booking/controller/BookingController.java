@@ -52,20 +52,29 @@ public class BookingController {
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<BookingDetailResponse> cancelBooking(@PathVariable("id") Long id) {
-        BookingDetailResponse response = bookingService.cancelBooking(id);
+    public ResponseEntity<BookingDetailResponse> cancelBooking(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        BookingDetailResponse response = bookingService.cancelBooking(id, userId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/check-in")
-    public ResponseEntity<BookingDetailResponse> checkInById(@PathVariable("id") Long id) {
-        BookingDetailResponse response = bookingService.checkInById(id);
+    public ResponseEntity<BookingDetailResponse> checkInById(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        BookingDetailResponse response = bookingService.checkInById(id, userId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/check-out")
-    public ResponseEntity<BookingDetailResponse> checkOutById(@PathVariable("id") Long id) {
-        BookingDetailResponse response = bookingService.checkOutById(id);
+    public ResponseEntity<BookingDetailResponse> checkOutById(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        BookingDetailResponse response = bookingService.checkOutById(id, userId);
         return ResponseEntity.ok(response);
     }
 }

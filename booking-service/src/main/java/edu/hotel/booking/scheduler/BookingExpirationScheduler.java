@@ -4,6 +4,7 @@ import edu.hotel.booking.entity.Booking;
 import edu.hotel.booking.kafka.BookingEventProducer;
 import edu.hotel.booking.model.BookingStatus;
 import edu.hotel.booking.repository.BookingRepository;
+import edu.hotel.booking.service.BookingStatusHistoryService;
 import edu.hotel.common.model.KafkaTopics;
 import edu.hotel.events.BookingCancelledEvent;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class BookingExpirationScheduler {
 
     private final BookingEventProducer bookingEventProducer;
 
+    private final BookingStatusHistoryService bookingStatusHistoryService;
+
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void cancelExpiredBooking() {
@@ -33,6 +36,9 @@ public class BookingExpirationScheduler {
 
         for (Booking booking : expiredBookings) {
             booking.setStatus(BookingStatus.CANCELLED);
+
+            bookingStatusHistoryService.saveStatusHistory(booking, BookingStatus.CANCELLED,
+                    "system", "Истек срок оплаты");
 
             bookingEventProducer.sendBookingCancelled(
                     BookingCancelledEvent.builder()

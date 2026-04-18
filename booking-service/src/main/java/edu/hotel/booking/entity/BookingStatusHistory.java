@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import edu.hotel.booking.model.BookingStatus;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -29,7 +30,8 @@ public class BookingStatusHistory {
     @Column(nullable = false)
     private BookingStatus status;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime changedAt;
 
     @Column(nullable = false)

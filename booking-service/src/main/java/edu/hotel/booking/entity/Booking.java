@@ -12,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "booking")
@@ -60,4 +61,7 @@ public class Booking {
 
     @Column(columnDefinition = "text")
     private String notes;
+
+    @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
+    List<BookingStatusHistory> statusHistories;
 }

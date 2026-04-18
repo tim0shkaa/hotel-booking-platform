@@ -28,12 +28,12 @@ public interface BookingService {
     );
 
     // POST /bookings/{id}/cancel
-    BookingDetailResponse cancelBooking(Long id);
+    BookingDetailResponse cancelBooking(Long id, Long userId);
 
     // POST bookings/{id}/check-in
-    BookingDetailResponse checkInById(Long id);
+    BookingDetailResponse checkInById(Long id, Long userId);
 
     // POST bookings/{id}/check-out
-    BookingDetailResponse checkOutById(Long id);
+    BookingDetailResponse checkOutById(Long id, Long userId);
 
 }
