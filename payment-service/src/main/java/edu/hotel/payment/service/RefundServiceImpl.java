@@ -58,9 +58,9 @@ public class RefundServiceImpl implements RefundService {
         refund.setReason(reason);
         refund.setStatus(RefundStatus.PENDING);
 
-        refundRepository.save(refund);
+        Refund savedRefund = refundRepository.save(refund);
 
-        mockPaymentProvider.processRefund(refund.getId());
+        mockPaymentProvider.processRefund(savedRefund.getId());
 
         return refundMapper.toResponse(refund);
     }

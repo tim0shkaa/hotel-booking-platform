@@ -71,9 +71,9 @@ public class PaymentServiceImpl implements PaymentService {
         attempt.setAttemptNumber(1);
         attempt.setPayment(payment);
         attempt.setStatus(AttemptStatus.IN_PROGRESS);
-        paymentAttemptRepository.save(attempt);
+        PaymentAttempt savedAttempt = paymentAttemptRepository.save(attempt);
 
-        mockPaymentProvider.processPayment(payment.getId(), attempt.getId());
+        mockPaymentProvider.processPayment(payment.getId(), savedAttempt.getId());
 
         return paymentMapper.toResponse(payment);
     }
@@ -102,9 +102,9 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentAttempt attempt = new PaymentAttempt();
         attempt.setAttemptNumber(nextAttemptNumber);
         attempt.setPayment(payment);
-        paymentAttemptRepository.save(attempt);
+        PaymentAttempt savedAttempt = paymentAttemptRepository.save(attempt);
 
-        mockPaymentProvider.processPayment(payment.getId(), attempt.getId());
+        mockPaymentProvider.processPayment(payment.getId(), savedAttempt.getId());
 
         return paymentMapper.toResponse(payment);
     }
